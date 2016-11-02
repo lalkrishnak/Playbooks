@@ -1,0 +1,17 @@
+---
+- hosts: linux
+  gather_facts: yes
+  vars:
+    var1: "{{ serviceName }}"
+  tasks:
+    - name: Service Restart
+      service: name={{ var1 }} state=restarted
+      become: true
+      become_user: root
+      become_method: sudo
+      when: ansible_os_family == "Debian" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux' or ansible_distribution == 'Ubuntu'
+      register: result
+    - name: Restart Service
+      debug: msg=" {{ var1 }} service has been restarted"
+      when: ansible_os_family == "Debian" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux' or ansible_distribution == 'Ubuntu'
+

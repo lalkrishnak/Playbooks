@@ -1,0 +1,51 @@
+---
+- hosts: windows
+  gather_facts: no
+  vars:
+    fmode: "{{ mode }}"
+    file_name: "{{ path | win_basename }}"
+  tasks:
+    - set_fact:
+        uf_path: "C:\\Windows\\Temp\\temp{{ 1000000000000000000000 | random }}.ps1"
+      when: (fmode == 'create' or fmode== 'update') and not (content is undefined) and content != ""
+    - name: Check file exists
+      raw: powershell.exe Test-Path -Path " {{ path }} "
+      register: status
+    - name: "Creating File {{ file_name }}"
+      win_file: "path={{ path }} state=touch"
+      register: result
+      when: (status.stdout.find("False") != -1) and (fmode == 'create')
+    - debug: msg="SUCCESS. File has been created."
+      when: result.changed and fmode == 'create'
+    - debug: msg="FAILED. File already exists."
+      when: result|skipped and fmode == 'create'
+    - name: "Copying Update Script"
+      win_copy: "src=Update.ps1 dest={{ uf_path }}"
+      when: (fmode == 'create' and status.stdout.find("False") != -1) or (fmode== 'update') and not (content is undefined) and content != ""
+    - name: "Updating File {{ file_name }}"
+      raw: "PowerShell -NoProfile -NonInteractive -ExecutionPolicy Unrestricted {{ uf_path }} {{ path }} {{ content | regex_replace('_{2}', ' ') }}"
+      when: (fmode == 'create' and status.stdout.find("False") != -1) or (fmode== 'update') and not (content is undefined) and content != ""
+    - name: "Deleting Update Script"
+      win_file: "path={{ uf_path }} state=absent"
+      when: (fmode == 'create' and status.stdout.find("False") != -1) or (fmode== 'update') and not (content is undefined) and content != ""
+    - name: Update Result
+      debug: msg="SUCCESS. File has been updated."
+      when: (fmode == 'create' and status.stdout.find("False") != -1) or (fmode== 'update') and not (content is undefined) and content != ""
+    - name: "Reading File {{ file_name }}"
+      raw: type "{{ path }}"
+      register: result1
+      ignore_errors: yes
+      when: (status.stdout.find("True") != -1) and (fmode == 'read')
+    - name: Read File Output
+      debug: var=result1.stdout_lines
+      when: (status.stdout.find("True") != -1) and (fmode == 'read')
+    - debug: msg="FAILED. File not exist."
+      when: (status.stdout.find("False") != -1) and (fmode == 'read')
+    - name: "Deleting File {{ file_name }}"
+      win_file: path={{ path }} state=absent
+      when: (status.stdout.find("True") != -1) and (fmode == 'delete')
+    - debug: msg="SUCCESS. File has been deleted."
+      when: (status.stdout.find("True") != -1) and (fmode == 'delete')
+    - debug: msg="FAILED. File not exist.."
+      when: (status.stdout.find("False") != -1) and (fmode == 'delete')
+

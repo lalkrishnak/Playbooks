@@ -1,0 +1,11 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:
+    - name: "Killing Process {{ pid }}"
+      raw: "taskkill /PID {{ pid }} /F"
+      register: result
+    - name: Kill Process Output
+      debug: var=result.stdout_lines
+    - name: Result
+      debug: 'msg="Process {{ pid }} has been killed"'

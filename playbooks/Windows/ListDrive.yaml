@@ -1,0 +1,8 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:
+    - name: "Available Disks are"
+      raw: powershell.exe Get-PSDrive -PSProvider 'FileSystem'
+      register: disklist
+    - debug: var=disklist.stdout_lines

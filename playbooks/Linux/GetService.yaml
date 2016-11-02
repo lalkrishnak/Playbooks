@@ -1,0 +1,14 @@
+---
+- hosts: linux
+  gather_facts: yes
+  tasks:
+    - name: Service list 
+      shell: service --status-all
+      become: true
+      become_user: root
+      become_method: sudo
+      when: ansible_os_family == "Debian" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux' or ansible_distribution == 'Ubuntu'
+      register: result
+    - name: "Services List"
+      debug: var=result.stdout_lines
+      when: ansible_os_family == "Debian" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux' or ansible_distribution == 'Ubuntu'
