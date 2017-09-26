@@ -1,0 +1,9 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:
+    - name: "Changing {{ svc_name }} Startup Type to {{ type }}"
+      raw: "SC config {{ svc_name }} start= {{ type }}"
+      register: result
+    - name: Change Startup Type
+      debug: var=result.stdout_lines

@@ -1,0 +1,15 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:
+    - set_fact:
+        path: "temp{{ 1000000000000000000000 | random }}"
+    - set_fact:
+        sdpath: "C:\\Windows\\Temp\\{{ path }}"
+    - name: Get Services List
+      raw: powershell "Get-CimInstance -ClassName Win32_Service | Select-Object -Property Name, State, StartMode | Export-csv {{ sdpath }}.csv"
+    - name: Services List
+      raw: powershell "Get-Content {{ sdpath }}.csv"
+      register: result
+    - debug: var=result.stdout_lines
+

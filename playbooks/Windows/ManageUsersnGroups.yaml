@@ -1,0 +1,45 @@
+---
+- hosts: windows
+  gather_facts: true
+  vars:
+    var1: "{{ mode }}"
+    var2: "{{ object }}"
+    var3: "{{ name }}"
+  tasks:
+    - win_user:
+        name: '{{ var3 }}'
+        password: '{{ password }}'
+        state: present
+      when: (var1 == 'create') and (var2 == 'user')
+    - win_group:
+        name: '{{ var3 }}'
+        state: present
+      when: (var1 == 'create') and (var2 == 'group')
+    - debug:
+        msg: "{{ var2 }} {{ var3 }} has been created"
+      when: (var1 == 'create') and (var2 == 'user' or var2 == 'group')
+    - win_user:
+        name: '{{ var3 }}'
+        state: absent
+      when: (var1 == 'delete') and (var2 == 'user')
+    - win_group:
+        name: '{{ var3 }}'
+        state: absent
+      when: (var1 == 'delete') and (var2 == 'group')
+    - debug:
+        msg: "{{ var2 }} {{ var3 }} has been deleted"
+      when: (var1 == 'delete') and (var2 == 'user' or var2 == 'group')
+    - win_user:
+        name: '{{ var3 }}'
+        account_locked: no
+      when: (var1 == 'unlock') and (var2 == 'user')
+    - debug:
+        msg: "User {{ var3 }} has been unlocked"
+      when: (var1 == 'unlock') and (var2 == 'user')
+    - win_user:
+        name: '{{ var3 }}'
+        password: '{{ password }}'
+      when: (var1 == 'reset') and (var2 == 'user')
+    - debug:
+        msg: "User {{ var3 }} password has been changed"
+      when: (var1 == 'reset') and (var2 == 'user')

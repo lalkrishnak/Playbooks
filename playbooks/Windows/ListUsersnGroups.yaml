@@ -1,0 +1,28 @@
+---
+- hosts: windows
+  gather_facts: true
+  vars:
+    var1: "{{ object }}"
+  tasks:
+    - set_fact:
+        path: "temp{{ 1000000000000000000000 | random }}"
+    - set_fact:
+        sdpath: "C:\\Windows\\Temp\\{{ path }}"
+    - name: List Users
+      raw: powershell "get-ciminstance win32_useraccount | Select Name | Export-csv {{ sdpath }}.csv"
+      when: var1 == 'user'
+    - name: Users List
+      raw: powershell "Get-Content {{ sdpath }}.csv"
+      register: result
+      when: var1 == 'user'
+    - debug: var=result.stdout_lines
+      when: var1 == 'user'
+    - name: List Groups
+      raw: powershell "get-ciminstance Win32_Group | Select Name | Export-csv {{ sdpath }}.csv"
+      when: var1 == 'group'
+    - name: Group List
+      raw: powershell "Get-Content {{ sdpath }}.csv"
+      register: result
+      when: var1 == 'group'
+    - debug: var=result.stdout_lines
+      when: var1 == 'group'

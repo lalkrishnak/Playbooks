@@ -1,0 +1,13 @@
+---
+- name: Bootstrap Node
+  hosts: router
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: Collecting Device Version
+      ios_command:
+        commands:
+          - show version
+        provider: "{{ cli }}"
+      register: running_config
+    - debug: var=running_config.stdout_lines

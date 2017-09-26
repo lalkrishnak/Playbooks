@@ -1,0 +1,59 @@
+---
+- hosts: windows
+  gather_facts: true
+  vars:
+    var1: "{{ object }}"
+    var2: "{{ mode }}"
+  tasks:
+    - set_fact:
+        path: "temp{{ 1000000000000000000000 | random }}.ps1"
+    - set_fact:
+        sdpath: "C:\\Windows\\Temp\\{{ path }}"
+    - name: Copy Script
+      win_copy: src=ListGroupMembers.ps1 dest={{ sdpath }}
+      when: (var2 == 'list') and (var1 == 'group')
+    - name: Listing Group Members
+      raw: powershell "{{ sdpath }} {{ groupname }}"
+      register: result
+      when: (var2 == 'list') and (var1 == 'group')
+    - debug: var=result.stdout_lines
+      when: (var2 == 'list') and (var1 == 'group')
+    - name: Copy Script
+      win_copy: src=ListUserGroups.ps1 dest={{ sdpath }}
+      when: (var2 == 'list') and (var1 == 'user')
+    - name: Listing User Groups
+      raw: powershell "{{ sdpath }} {{ username }}"
+      register: result
+      when: (var2 == 'list') and (var1 == 'user')
+    - debug: var=result.stdout_lines
+      when: (var2 == 'list') and (var1 == 'user')
+    - name: Copy Script
+      win_copy: src=AddUsertoGroup.ps1 dest={{ sdpath }}
+      when: (var2 == 'add') and (var1 == 'group')
+    - name: Add User to Group
+      raw: powershell "{{ sdpath }} {{ groupname }} {{ username }}"
+      register: result
+      when: (var2 == 'add') and (var1 == 'group')
+    - debug: var=result.stderr
+      when: (var2 == 'add') and (var1 == 'group') and result.stderr != ""
+    - debug:
+        msg: "User {{ username }} has been successfully added to group {{ groupname }}"
+      when: (var2 == 'add') and (var1 == 'group') and result.stderr == ""
+    - debug:
+        msg: "Error while adding User {{ username }} to group {{ groupname }}"
+      when: (var2 == 'add') and (var1 == 'group') and result.stderr != ""
+    - name: Copy Script
+      win_copy: src=RemoveUserfromGroup.ps1 dest={{ sdpath }}
+      when: (var2 == 'remove') and (var1 == 'group')
+    - name: Remove User from Group
+      raw: powershell "{{ sdpath }} {{ groupname }} {{ username }}"
+      register: result
+      when: (var2 == 'remove') and (var1 == 'group')
+    - debug: var=result.stderr
+      when: (var2 == 'remove') and (var1 == 'group') and result.stderr != ""
+    - debug:
+        msg: "User {{ username }} has been successfully removed from group {{ groupname }}"
+      when: (var2 == 'remove') and (var1 == 'group') and result.stderr == ""
+    - debug:
+        msg: "Error while removing User {{ username }} from group {{ groupname }}"
+      when: (var2 == 'remove') and (var1 == 'group') and result.stderr != ""

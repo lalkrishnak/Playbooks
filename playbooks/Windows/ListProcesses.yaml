@@ -1,0 +1,11 @@
+---
+- hosts: windows
+  gather_facts: no
+  tasks:
+    - name: List Processes
+      raw: tasklist /FO CSV
+      register: result
+    - name: Print Processes
+      debug: var=result.stdout_lines
+    - name: Result
+      debug: msg="Processes listed"
