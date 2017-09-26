@@ -1,4 +1,0 @@
----
-cli:
-  host: 192.168.0.101
-  transport: cli
