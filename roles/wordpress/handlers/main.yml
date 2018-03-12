@@ -1,0 +1,12 @@
+---
+# handlers file for wordpress
+- name: "Enable Apache"
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: "Restart Apache"
+  service:
+    name: httpd
+    state: restarted
